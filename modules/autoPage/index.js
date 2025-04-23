@@ -23,7 +23,7 @@
                 pathPattern: /^\/(categories\/|page|award|search|$)/,
                 scrollThreshold: 200,
                 nextPagerSelector: '.nsk-pager a.pager-next',
-                postListSelector: 'ul.post-list',
+                postListSelector: 'ul.post-list:not(.topic-carousel-panel)',
                 topPagerSelector: 'div.nsk-pager.pager-top',
                 bottomPagerSelector: 'div.nsk-pager.pager-bottom',
                 type: '【无缝】帖子列表'
@@ -338,22 +338,56 @@
                                         }
                                     }
 
-                                    const newComments = Array.from(doc.querySelector(opt.postListSelector).children);
+                                    // 查找新页面中的帖子列表
+                                    const newPostList = doc.querySelector(opt.postListSelector);
+                                    if (!newPostList) {
+                                        console.error('[NS助手] 在新页面中未找到帖子列表元素');
+                                        is_requesting = false;
+                                        return;
+                                    }
+                                    
+                                    const newComments = Array.from(newPostList.children);
                                     console.log(`[NS助手] 获取到 ${newComments.length} 个新内容`);
                                     
-                                    document.querySelector(opt.postListSelector).append(...newComments);
+                                    // 查找当前页面中的帖子列表
+                                    const currentPostList = document.querySelector(opt.postListSelector);
+                                    if (!currentPostList) {
+                                        console.error('[NS助手] 在当前页面中未找到帖子列表元素');
+                                        is_requesting = false;
+                                        return;
+                                    }
+                                    
+                                    currentPostList.append(...newComments);
                                     
                                     if (_this.config.comment.pathPattern.test(location.pathname)) {
                                         _this.utils.processCommentMenus(newComments);
                                     }
                                     
-                                    document.querySelector(opt.topPagerSelector).innerHTML = doc.querySelector(opt.topPagerSelector).innerHTML;
-                                    document.querySelector(opt.bottomPagerSelector).innerHTML = doc.querySelector(opt.bottomPagerSelector).innerHTML;
+                                    // 更新分页器
+                                    const topPager = document.querySelector(opt.topPagerSelector);
+                                    const bottomPager = document.querySelector(opt.bottomPagerSelector);
+                                    const newTopPager = doc.querySelector(opt.topPagerSelector);
+                                    const newBottomPager = doc.querySelector(opt.bottomPagerSelector);
+                                    
+                                    if (topPager && newTopPager) {
+                                        topPager.innerHTML = newTopPager.innerHTML;
+                                    } else {
+                                        console.warn('[NS助手] 无法更新顶部分页器');
+                                    }
+                                    
+                                    if (bottomPager && newBottomPager) {
+                                        bottomPager.innerHTML = newBottomPager.innerHTML;
+                                    } else {
+                                        console.warn('[NS助手] 无法更新底部分页器');
+                                    }
                                     
                                     history.pushState(null, null, nextUrl);
                                     console.log('[NS助手] 页面状态更新完成');
                                     
                                     is_requesting = false;
+                                } else {
+                                    is_requesting = false;
+                                    console.error(`[NS助手] 加载页面失败: ${response.status}`);
                                 }
                             },
                             onerror: function(error) {
@@ -397,5 +431,5 @@
     };
 
     waitForNS();
-    console.log('[NS助手] autoPage 模块加载完成 v0.4.2');
+    console.log('[NS助手] autoPage 模块加载完成 v0.4.3');
 })();
