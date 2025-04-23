@@ -431,5 +431,5 @@
     };
 
     waitForNS();
-    console.log('[NS助手] autoPage 模块加载完成 v0.4.3');
+    console.log('[NS助手] autoPage 模块加载完成 v0.4.4');
 })();
