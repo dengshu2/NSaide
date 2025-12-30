@@ -236,12 +236,21 @@
     color: #40a9ff;
 }
 
+/* 修复按钮容器布局 */
+.ns-usercard-enhanced div[style*="text-align: right"] {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+}
+
 .ns-block-btn {
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-right: 6px;
+    margin-right: 0;
     padding: 4px 12px;
     font-size: 13px;
     color: #fff !important;
@@ -250,6 +259,7 @@
     transition: all 0.3s ease;
     border: none;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 .ns-block-btn:hover {
@@ -478,4 +488,4 @@
 
 .ns-alert-error {
     border-left: 4px solid #ff4d4d;
-} 
+}

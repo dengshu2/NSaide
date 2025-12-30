@@ -20,12 +20,12 @@
 //官方交流群/反馈群：https://t.me/NSaide
 //官方频道：https://t.me/NSaide_channel
 //官方greasyfork安装地址： https://greasyfork.org/zh-CN/scripts/523819
-(function() {
+(function () {
     'use strict';
-    
+
     console.log('[NS助手] 脚本开始加载');
 
-    const CONFIG_URL = 'https://raw.githubusercontent.com/stardeep925/NSaide/main/modules/config.json';
+    const CONFIG_URL = 'https://raw.githubusercontent.com/dengshu2/NSaide/main/modules/config.json';
     const CACHE_EXPIRY = 30 * 60 * 1000;
     const CACHE_KEY_PREFIX = 'ns_module_cache_';
     const CONFIG_CACHE_KEY = 'ns_config_cache';
@@ -33,7 +33,7 @@
     const getCachedData = (key) => {
         const cached = GM_getValue(key);
         if (!cached) return null;
-        
+
         try {
             const { data, timestamp } = JSON.parse(cached);
             if (Date.now() - timestamp > CACHE_EXPIRY) {
@@ -116,7 +116,7 @@
             version: GM_info.script.version,
             modules: new Map(),
             isReady: false,
-            
+
             registerModule(moduleDefinition) {
                 if (!moduleDefinition || !moduleDefinition.id || !moduleDefinition.init) return;
 
@@ -135,7 +135,7 @@
                 const enabledModules = Array.from(this.modules.values()).filter(m => m.enabled);
                 console.log(`[NS助手] 开始初始化 ${enabledModules.length} 个已启用模块`);
 
-                Promise.all(enabledModules.map(module => 
+                Promise.all(enabledModules.map(module =>
                     new Promise(resolve => {
                         try {
                             module.init();
@@ -162,9 +162,9 @@
         try {
             createNS();
             const config = await loadConfig();
-            
+
             await Promise.all(config.modules.map(loadModule));
-            
+
             if (window.NS.modules.size > 0) {
                 window.NS.init();
             }

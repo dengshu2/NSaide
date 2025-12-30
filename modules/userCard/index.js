@@ -1,4 +1,4 @@
-(function() {
+(function () {
     'use strict';
 
     console.log('[NS助手] userCard 模块开始加载');
@@ -25,7 +25,7 @@
                     value: () => GM_getValue('ns_usercard_enable_block', true)
                 }
             ],
-            
+
             handleChange(settingId, value, settingsManager) {
                 if (settingId === 'enable_dragging') {
                     settingsManager.cacheValue('ns_usercard_enable_dragging', value);
@@ -44,10 +44,10 @@
                 return new Promise((resolve) => {
                     const overlay = document.createElement('div');
                     overlay.className = 'ns-confirm-overlay';
-                    
+
                     const dialog = document.createElement('div');
                     dialog.className = 'ns-confirm-dialog';
-                    
+
                     dialog.innerHTML = `
                         <div class="ns-confirm-title">${title}</div>
                         <div class="ns-confirm-content">${content}</div>
@@ -56,16 +56,16 @@
                             <button class="ns-confirm-btn ns-confirm-btn-confirm">确定</button>
                         </div>
                     `;
-                    
+
                     document.body.appendChild(overlay);
                     document.body.appendChild(dialog);
-                    
+
                     const close = (result) => {
                         overlay.remove();
                         dialog.remove();
                         resolve(result);
                     };
-                    
+
                     dialog.querySelector('.ns-confirm-btn-cancel').onclick = () => close(false);
                     dialog.querySelector('.ns-confirm-btn-confirm').onclick = () => close(true);
                     overlay.onclick = () => close(false);
@@ -75,14 +75,14 @@
             showAlert(message, type = 'success') {
                 const alert = document.createElement('div');
                 alert.className = `ns-alert ns-alert-${type}`;
-                
+
                 alert.innerHTML = `
                     <span class="ns-alert-icon">${type === 'success' ? '✓' : '✕'}</span>
                     <span class="ns-alert-content">${message}</span>
                 `;
-                
+
                 document.body.appendChild(alert);
-                
+
                 setTimeout(() => {
                     alert.style.opacity = '0';
                     alert.style.transform = 'translateX(20px)';
@@ -103,7 +103,7 @@
                         }),
                         credentials: 'include'
                     });
-                    
+
                     const data = await response.json();
                     if (data.success) {
                         console.log('[NS助手] 用户屏蔽成功:', userName);
@@ -135,7 +135,7 @@
             async waitForElement(selector, parent = document, timeout = 10000) {
                 const element = parent.querySelector(selector);
                 if (element) return element;
-            
+
                 return new Promise((resolve) => {
                     const observer = new MutationObserver((mutations, obs) => {
                         const element = parent.querySelector(selector);
@@ -144,7 +144,7 @@
                             resolve(element);
                         }
                     });
-            
+
                     observer.observe(parent, {
                         childList: true,
                         subtree: true
@@ -172,16 +172,16 @@
                             'Accept': 'application/json'
                         }
                     });
-                    
+
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-                    
+
                     const data = await response.json();
                     if (!data.success) {
                         throw new Error('Failed to get user info');
                     }
-                    
+
                     this.clearOldCache();
                     this.userDataCache.set(userId, data.detail);
                     return data.detail;
@@ -200,12 +200,12 @@
                         progress: 100
                     };
                 }
-            
+
                 const nextLevel = currentLevel + 1;
                 const requiredChickenLegs = 100 * Math.pow(nextLevel, 2);
                 const remaining = Math.max(0, requiredChickenLegs - currentChickenLegs);
                 const progress = Math.min(100, (currentChickenLegs / requiredChickenLegs) * 100);
-            
+
                 return {
                     isMaxLevel: false,
                     nextLevel,
@@ -271,7 +271,7 @@
 
                 let totalScore = postScore + commentScore + chickenScore + rankScore;
                 let bioBonus = bio ? 5 : 0;
-                
+
                 return {
                     score: totalScore,
                     finalScore: totalScore + bioBonus,
@@ -304,7 +304,7 @@
 
         init() {
             console.log('[NS助手] 初始化用户卡片增强功能');
-            
+
             this.waitAndEnhance = this.waitAndEnhance.bind(this);
             this.enhance = this.enhance.bind(this);
             this.enableDragging = this.enableDragging.bind(this);
@@ -312,7 +312,7 @@
             console.log('[NS助手] 开始加载用户卡片样式');
             GM_xmlhttpRequest({
                 method: 'GET',
-                url: 'https://raw.githubusercontent.com/stardeep925/NSaide/main/modules/userCard/style.css',
+                url: 'https://raw.githubusercontent.com/dengshu2/NSaide/main/modules/userCard/style.css',
                 onload: (response) => {
                     if (response.status === 200) {
                         console.log('[NS助手] 用户卡片样式加载成功');
@@ -348,7 +348,7 @@
                 if (themeChanged) {
                     const newTheme = document.body.classList.contains('dark-layout') ? 'dark' : 'light';
                     console.log('[NS助手] 主题切换:', newTheme);
-                    
+
                     const cards = document.querySelectorAll('.hover-user-card');
                     cards.forEach(card => {
                         if (card.classList.contains('enhanced')) {
@@ -382,9 +382,9 @@
             let startTop;
 
             const dragStart = (e) => {
-                if (e.target.tagName.toLowerCase() === 'a' || 
+                if (e.target.tagName.toLowerCase() === 'a' ||
                     e.target.tagName.toLowerCase() === 'button' ||
-                    e.target.closest('a') || 
+                    e.target.closest('a') ||
                     e.target.closest('button')) {
                     return;
                 }
@@ -454,7 +454,7 @@
 
                 console.log('[NS助手] 用户数据获取完成，开始增强');
                 this.enhance(card, userInfo);
-              
+
                 if (GM_getValue('ns_usercard_enable_dragging', true)) {
                     this.enableDragging(card);
                 }
@@ -478,12 +478,12 @@
                         blockBtn.className = 'btn ns-block-btn';
                         blockBtn.textContent = '屏蔽';
                         blockBtn.href = 'javascript:void(0)';
-                        
+
                         const tooltip = document.createElement('span');
                         tooltip.className = 'ns-block-tooltip';
                         tooltip.textContent = '将此用户加入屏蔽列表';
                         blockBtn.appendChild(tooltip);
-                        
+
                         blockBtn.onclick = async (e) => {
                             e.preventDefault();
                             const username = cardElement.querySelector('a.Username').textContent;
@@ -495,7 +495,7 @@
                                 await this.utils.blockUser(username);
                             }
                         };
-                        
+
                         actionArea.insertBefore(blockBtn, actionArea.firstChild);
                     } else {
                         console.log('[NS助手] 未找到操作区域');
@@ -605,7 +605,7 @@
     const waitForNS = () => {
         retryCount++;
         console.log(`[NS助手] 第 ${retryCount} 次尝试注册 userCard 模块`);
-        
+
         if (typeof window.NSRegisterModule === 'function') {
             console.log('[NS助手] 模块系统就绪，开始注册 userCard');
             window.NSRegisterModule(NSUserCard);
