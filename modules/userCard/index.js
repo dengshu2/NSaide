@@ -474,6 +474,21 @@
                     console.log('[NS助手] 添加屏蔽按钮');
                     const actionArea = cardElement.querySelector('div[style*="text-align: right"]');
                     if (actionArea) {
+                        // 直接修复按钮容器样式
+                        actionArea.style.display = 'flex';
+                        actionArea.style.flexWrap = 'nowrap';
+                        actionArea.style.gap = '6px';
+                        actionArea.style.justifyContent = 'flex-end';
+                        actionArea.style.alignItems = 'center';
+
+                        // 修复所有现有按钮的样式
+                        const existingButtons = actionArea.querySelectorAll('a, button');
+                        existingButtons.forEach(btn => {
+                            btn.style.flexShrink = '0';
+                            btn.style.margin = '0';
+                            btn.style.whiteSpace = 'nowrap';
+                        });
+
                         const blockBtn = document.createElement('a');
                         blockBtn.className = 'btn ns-block-btn';
                         blockBtn.textContent = '屏蔽';
