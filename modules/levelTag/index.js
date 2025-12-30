@@ -1,6 +1,6 @@
-(function() {
+(function () {
     'use strict';
-    
+
     console.log('[NS助手] levelTag 模块开始加载');
 
     const NSLevelTag = {
@@ -49,7 +49,7 @@
                     value: () => GM_getValue('ns_leveltag_post_level_tag_position', 'after_name')
                 }
             ],
-            
+
             handleChange(settingId, value, settingsManager) {
                 if (settingId === 'enable_level_tag') {
                     settingsManager.cacheValue('ns_leveltag_enable_level_tag', value);
@@ -75,88 +75,6 @@
             }
         },
 
-        utils: {
-            userDataCache: new Map(),
-            maxCacheSize: 100,
-            processingUsers: new Set(),
-
-            clearOldCache() {
-                if (this.userDataCache.size > this.maxCacheSize) {
-                    const entries = Array.from(this.userDataCache.entries());
-                    const halfSize = Math.floor(this.maxCacheSize / 2);
-                    entries.slice(0, entries.length - halfSize).forEach(([key]) => {
-                        this.userDataCache.delete(key);
-                    });
-                }
-            },
-
-            async waitForElement(selector, parent = document, timeout = 10000) {
-                const element = parent.querySelector(selector);
-                if (element) return element;
-            
-                return new Promise((resolve) => {
-                    const observer = new MutationObserver((mutations, obs) => {
-                        const element = parent.querySelector(selector);
-                        if (element) {
-                            obs.disconnect();
-                            resolve(element);
-                        }
-                    });
-            
-                    observer.observe(parent, {
-                        childList: true,
-                        subtree: true
-                    });
-
-                    setTimeout(() => {
-                        observer.disconnect();
-                        resolve(null);
-                    }, timeout);
-                });
-            },
-
-            async getUserInfo(userId) {
-                try {
-                    if (this.processingUsers.has(userId)) {
-                        return this.userDataCache.get(userId) || null;
-                    }
-
-                    if (this.userDataCache.has(userId)) {
-                        return this.userDataCache.get(userId);
-                    }
-
-                    this.processingUsers.add(userId);
-                    console.log(`[NS助手] 获取用户数据: ${userId}`);
-                    
-                    const response = await fetch(`https://www.nodeseek.com/api/account/getInfo/${userId}`, {
-                        method: 'GET',
-                        credentials: 'include',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    if (!data.success) {
-                        throw new Error('Failed to get user info');
-                    }
-                    
-                    this.clearOldCache();
-                    this.userDataCache.set(userId, data.detail);
-                    this.processingUsers.delete(userId);
-                    return data.detail;
-                } catch (error) {
-                    console.error('[NS助手] 获取用户信息失败:', error);
-                    this.processingUsers.delete(userId);
-                    return null;
-                }
-            }
-        },
-
         async enhancePageUserLevels() {
             try {
                 if (!GM_getValue('ns_leveltag_enable_level_tag', true)) {
@@ -165,14 +83,14 @@
 
                 const authorInfoElements = document.querySelectorAll('.author-info:not([data-ns-level-processed])');
                 const position = GM_getValue('ns_leveltag_level_tag_position', 'before_name');
-                
+
                 for (const authorInfo of authorInfoElements) {
                     const authorLink = authorInfo.querySelector('a.author-name');
                     if (!authorLink) continue;
 
                     const userId = authorLink.getAttribute('href').split('/').pop();
-                    const userInfo = await this.utils.getUserInfo(userId);
-                    
+                    const userInfo = await window.NSUserDataService.getUserInfo(userId);
+
                     if (!userInfo) continue;
 
                     if (authorInfo.hasAttribute('data-ns-level-processed')) {
@@ -208,7 +126,7 @@
                     const updateTooltipPosition = (e) => {
                         const rect = levelTag.getBoundingClientRect();
                         const tooltipRect = tooltip.getBoundingClientRect();
-                        
+
                         let left = rect.left + (rect.width - tooltipRect.width) / 2;
                         let top = rect.bottom + 5;
 
@@ -238,7 +156,7 @@
                             updateTooltipPosition();
                         }
                     }, { passive: true });
-                    
+
                     switch (position) {
                         case 'before_name':
                             authorLink.parentNode.insertBefore(levelTag, authorLink);
@@ -250,7 +168,7 @@
                             authorInfo.appendChild(levelTag);
                             break;
                     }
-                    
+
                     authorInfo.setAttribute('data-ns-level-processed', 'true');
                 }
             } catch (error) {
@@ -266,14 +184,14 @@
 
                 const postListContents = document.querySelectorAll('.post-list-content:not([data-ns-level-processed])');
                 const position = GM_getValue('ns_leveltag_post_level_tag_position', 'after_name');
-                
+
                 for (const postContent of postListContents) {
                     const authorLink = postContent.querySelector('.info-author a');
                     if (!authorLink) continue;
 
                     const userId = authorLink.getAttribute('href').split('/').pop();
-                    const userInfo = await this.utils.getUserInfo(userId);
-                    
+                    const userInfo = await window.NSUserDataService.getUserInfo(userId);
+
                     if (!userInfo) continue;
 
                     if (postContent.hasAttribute('data-ns-level-processed')) {
@@ -309,7 +227,7 @@
                     const updateTooltipPosition = (e) => {
                         const rect = levelTag.getBoundingClientRect();
                         const tooltipRect = tooltip.getBoundingClientRect();
-                        
+
                         let left = rect.left + (rect.width - tooltipRect.width) / 2;
                         let top = rect.bottom + 5;
 
@@ -339,7 +257,7 @@
                             updateTooltipPosition();
                         }
                     }, { passive: true });
-                    
+
                     switch (position) {
                         case 'before_title':
                             const titleElement = postContent.querySelector('.post-title');
@@ -354,7 +272,7 @@
                             authorLink.parentNode.insertBefore(levelTag, authorLink.nextSibling);
                             break;
                     }
-                    
+
                     postContent.setAttribute('data-ns-level-processed', 'true');
                 }
             } catch (error) {
@@ -364,7 +282,7 @@
 
         init() {
             console.log('[NS助手] 初始化等级标签模块');
-            
+
             this.enhancePageUserLevels = this.enhancePageUserLevels.bind(this);
             this.enhancePostLevels = this.enhancePostLevels.bind(this);
 
@@ -426,7 +344,7 @@
                 if (themeChanged) {
                     const newTheme = document.body.classList.contains('dark-layout') ? 'dark' : 'light';
                     console.log('[NS助手] 主题切换:', newTheme);
-                    
+
                     const levelTags = document.querySelectorAll('.ns-level-tag');
                     levelTags.forEach(tag => {
                         if (newTheme === 'dark') {
@@ -458,7 +376,7 @@
     const waitForNS = () => {
         retryCount++;
         console.log(`[NS助手] 第 ${retryCount} 次尝试注册 levelTag 模块`);
-        
+
         if (typeof window.NSRegisterModule === 'function') {
             console.log('[NS助手] 模块系统就绪，开始注册 levelTag');
             window.NSRegisterModule(NSLevelTag);
@@ -474,5 +392,5 @@
     };
 
     waitForNS();
-    console.log('[NS助手] levelTag 模块加载完成 v0.1.1');
-})(); 
+    console.log('[NS助手] levelTag 模块加载完成 v0.2.0');
+})();

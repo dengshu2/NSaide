@@ -7,6 +7,11 @@
             "url": "https://raw.githubusercontent.com/dengshu2/NSaide/main/modules/settings/index.js"
         },
         {
+            "name": "用户数据服务",
+            "id": "userDataService",
+            "url": "https://raw.githubusercontent.com/dengshu2/NSaide/main/modules/userDataService/index.js"
+        },
+        {
             "name": "用户卡片增强",
             "id": "userCard",
             "url": "https://raw.githubusercontent.com/dengshu2/NSaide/main/modules/userCard/index.js"

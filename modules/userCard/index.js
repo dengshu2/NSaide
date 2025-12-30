@@ -37,9 +37,6 @@
         },
 
         utils: {
-            userDataCache: new Map(),
-            maxCacheSize: 100,
-
             showConfirm(title, content) {
                 return new Promise((resolve) => {
                     const overlay = document.createElement('div');
@@ -120,18 +117,6 @@
                 }
             },
 
-            clearOldCache() {
-                console.log('[NS助手] 检查缓存大小:', this.userDataCache.size);
-                if (this.userDataCache.size > this.maxCacheSize) {
-                    console.log('[NS助手] 清理过期缓存');
-                    const entries = Array.from(this.userDataCache.entries());
-                    const halfSize = Math.floor(this.maxCacheSize / 2);
-                    entries.slice(0, entries.length - halfSize).forEach(([key]) => {
-                        this.userDataCache.delete(key);
-                    });
-                }
-            },
-
             async waitForElement(selector, parent = document, timeout = 10000) {
                 const element = parent.querySelector(selector);
                 if (element) return element;
@@ -155,40 +140,6 @@
                         resolve(null);
                     }, timeout);
                 });
-            },
-
-            async getUserInfo(userId) {
-                try {
-                    if (this.userDataCache.has(userId)) {
-                        console.log(`[NS助手] 使用缓存的用户数据: ${userId}`);
-                        return this.userDataCache.get(userId);
-                    }
-
-                    console.log(`[NS助手] 获取用户数据: ${userId}`);
-                    const response = await fetch(`https://www.nodeseek.com/api/account/getInfo/${userId}`, {
-                        method: 'GET',
-                        credentials: 'include',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    if (!data.success) {
-                        throw new Error('Failed to get user info');
-                    }
-
-                    this.clearOldCache();
-                    this.userDataCache.set(userId, data.detail);
-                    return data.detail;
-                } catch (error) {
-                    console.error('[NS助手] 获取用户信息失败:', error);
-                    return null;
-                }
             },
 
             calculateNextLevelInfo(currentLevel, currentChickenLegs) {
@@ -446,7 +397,7 @@
                 }
 
                 console.log('[NS助手] 找到卡片，获取用户数据...');
-                const userInfo = await this.utils.getUserInfo(userId);
+                const userInfo = await window.NSUserDataService.getUserInfo(userId);
                 if (!userInfo) {
                     console.log('[NS助手] 获取用户数据失败');
                     return;
@@ -636,5 +587,5 @@
     };
 
     waitForNS();
-    console.log('[NS助手] userCard 模块加载完成 v0.1.5');
+    console.log('[NS助手] userCard 模块加载完成 v0.2.0');
 })();
